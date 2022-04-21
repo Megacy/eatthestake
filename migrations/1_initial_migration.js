@@ -5,8 +5,8 @@ var Web3 = require('web3');
 
 module.exports = async function(deployer, network, accounts) {
   // BSC addresses
-  let depositToken = '0x6dd2f3f2Acc7502A56e6f1C2Beee22450BA25fCE'; // SagaW
-  let rewardToken = '0x6dd2f3f2Acc7502A56e6f1C2Beee22450BA25fCE'; // SagaW
+  let depositToken = '0x44f13a36738d1bce9262c94e42be5b6ff8cd8bb3'; // SagaW
+  let rewardToken = '0x44f13a36738d1bce9262c94e42be5b6ff8cd8bb3'; // SagaW
   
   // If deploying to dev network, create mock tokens and use them for staking contract.
   if (network == "development") {
