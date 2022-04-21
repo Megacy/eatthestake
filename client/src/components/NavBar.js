@@ -17,13 +17,7 @@ export default function NavBar() {
         <>
             <div className="minimalistic-nav-bar">
                 <div>
-                <img
-                    alt=""
-                    src={require('../logo.png')}
-                    width="300px"
-                    height="27px"
-                    className="d-inline-block align-top"
-                />
+                SAGAWORLD
                 </div>
                 <div>
                 STAKE

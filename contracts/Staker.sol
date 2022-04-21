@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /*
 
 
-    Staker contract for ETB Projects #2
+    Staker contract for SagaW Projects 
     ===================================
 
     Based on Sushiswap MasterChef.
@@ -37,8 +37,8 @@ contract Staker is Ownable {
 
     mapping (address => UserInfo) users;
     
-    IERC20 public depositToken; // eg. PancakeSwap ETB LP token
-    IERC20 public rewardToken;  // eg. ETB
+    IERC20 public depositToken; // eg. PancakeSwap SagaW LP token
+    IERC20 public rewardToken;  // eg. SagaW
 
     // We are not using depositToken.balanceOf in order to prevent DOS attacks (attacker can make the total tokens staked very large)
     // and to add a skim() functionality with which the owner can collect tokens which were transferred outside the stake mechanism.

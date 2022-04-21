@@ -3,3 +3,4 @@ client/src/contracts/Migrations.json
 rganache
 tconsole
 build/
+.secret
