@@ -16,11 +16,17 @@ export default function NavBar() {
     return (
         <>
             <div className="minimalistic-nav-bar">
-                <div>
-                SAGAWORLD
+                <div className="threew">
+                <img
+                    alt=""
+                    src={require('../logo.png')}
+                    width="60px"
+                    height="50px"
+                    className="d-inline-block align-top"
+                />
                 </div>
-                <div>
-                STAKE
+                <div >
+                SagaWorld Staking
                 </div>
                 <div>
                 {web3? <AddressView />: 'Not connected'}

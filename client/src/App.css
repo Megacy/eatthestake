@@ -13,8 +13,11 @@
 
 body {
   /*background-color: #555A64;*/
-  background-color: #2F2F2F;
-
+  background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),  url('./bg1-offset.png');
+  background-repeat:no-repeat;
+  background-attachment:fixed;
+  background-position: center;
+  background-size: cover;
 }
 
 hr {
@@ -35,7 +38,8 @@ hr {
 .minimalistic-nav-bar div:nth-of-type(2) {
   font-size: 20px;
   font-weight: 800;
-  text-shadow: 1px 1px 2px black, 0 0 25px cyan, 0 0 5px darkcyan;
+  text-shadow: 1px 1px 2px black, 0 0 25px #ff0b02, 0 0 5px #ff1702;
+  text-align: center;
 }
 
 .minimalistic-nav-bar div:nth-of-type(3) {
@@ -52,9 +56,9 @@ hr {
 .inner-container {
   /*color: black;*/
   margin-top: 10px;
-  color: #33D3D2;
+  color: #ff0b02;
   background-color: #212529;
-  width: 38%;
+  width: 40%;
   border-radius: 20px;
   font-size: 18px;
   font-weight: 600;
@@ -70,7 +74,7 @@ hr {
 }
 
 .label-above-button {
-  font-size: 12px;
+  font-size: 14px;
   text-align: start;
   width: 90%;
   margin: auto;
@@ -80,23 +84,23 @@ hr {
 }
 
 .btn:active {
-  background-color: #0D4747 !important;
-  border-color: #0D4747 !important;
+  background-color: #d61c0c !important;
+  border-color: #d61c0c !important;
 }
 
 .btn:hover, .btn:focus {
-  background-color: #115151;
-  border-color: #115151;
+  background-color: #d61c0c;
+  border-color: #d61c0c;
 }
 
 .btn:disabled {
-  background-color: #156667 ;
-  border-color: #156667 ;
+  background-color: #680e06 ;
+  border-color: #680e06 ;
 }
 
 .btn {
-  background-color: #156667 ;
-  border-color: #156667 ;
+  background-color: #ff1702 ;
+  border-color: #ff1702 ;
 }
 
 
@@ -222,4 +226,37 @@ button:focus , button:active {
 
 .tooltip-arrow::before {
   border-right-color: #0F4949 !important;
+}
+
+/* Mobile Styles */
+
+@media screen and (max-width: 768px) {
+  body{
+    background-size: auto;
+  }
+  .inner-container{
+    width: 80%;
+  }
+  .time-left-label{
+    flex-direction: column;
+  }
+  .time{
+    justify-content: space-between;
+    width: 80%;
+  }
+  .card-key-value{
+    flex-direction: column;
+    width: 80%;
+    justify-content: center;
+  }
+  .card-key-value > div:nth-of-type(2){
+    margin-left: 0;
+  }
+  .mainViewCards{
+    flex-direction: column;
+  }
+}
+
+.threew{
+  width: 300px;
 }

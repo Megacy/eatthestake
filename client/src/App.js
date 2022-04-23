@@ -159,7 +159,7 @@ function App() {
   const MainView = () => (
     <>
         <br/>
-        <div style={{display: 'flex'}}>
+        <div style={{display: 'flex'}} className="mainViewCards" >
           <UserPanel />
           {(accounts && accounts[0].toLowerCase() === owner.toLowerCase())? <AdminPanel /> : undefined}
         </div>

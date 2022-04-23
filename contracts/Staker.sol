@@ -12,8 +12,104 @@ abstract contract Context {
 
 pragma solidity 0.7.6;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+//import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+
+    function balanceOf(address account) external view returns (uint256);
+
+    function transfer(address recipient, uint256 amount) external returns (bool);
+
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+
+//import "@openzeppelin/contracts/math/SafeMath.sol";
+
+library SafeMath {
+
+    function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        uint256 c = a + b;
+        if (c < a) return (false, 0);
+        return (true, c);
+    }
+
+    function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        if (b > a) return (false, 0);
+        return (true, a - b);
+    }
+
+    function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        if (a == 0) return (true, 0);
+        uint256 c = a * b;
+        if (c / a != b) return (false, 0);
+        return (true, c);
+    }
+
+    function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        if (b == 0) return (false, 0);
+        return (true, a / b);
+    }
+
+    function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        if (b == 0) return (false, 0);
+        return (true, a % b);
+    }
+
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
+        return c;
+    }
+
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b <= a, "SafeMath: subtraction overflow");
+        return a - b;
+    }
+
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) return 0;
+        uint256 c = a * b;
+        require(c / a == b, "SafeMath: multiplication overflow");
+        return c;
+    }
+
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b > 0, "SafeMath: division by zero");
+        return a / b;
+    }
+
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b > 0, "SafeMath: modulo by zero");
+        return a % b;
+    }
+
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b <= a, errorMessage);
+        return a - b;
+    }
+
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b > 0, errorMessage);
+        return a / b;
+    }
+
+    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b > 0, errorMessage);
+        return a % b;
+    }
+}
+
+
+
 // import "@openzeppelin/contracts/access/Ownable.sol";
 
 
@@ -22,18 +118,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
     Staker contract for SagaW Projects 
     ===================================
-
-    Based on Sushiswap MasterChef.
-    The basic idea is to keep an accumulating pool "share balance" (accumulatedRewardPerShare):
-    Every unit of this balance represents the proportionate reward of a single wei which is staked in the contract.
-    This balance is updated in updateRewards() (which is called in each deposit/withdraw/claim)
-        according to the time passed from the last update and in proportion to the total tokens staked in the pool.
-        Basically: accumulatedRewardPerShare = accumulatedRewardPerShare + (seconds passed from last update) * (rewards per second) / (total tokens staked)
-    We also save for each user an accumulation of how much he has already claimed so far.
-    And so to calculate a user's rewards, we basically just need to calculate:
-    userRewards = accumulatedRewardPerShare * (user's currently staked tokens) - (user's rewards already claimed) 
-    And updated the user's rewards already claimed accordingly.
-
 
 */
 abstract contract Ownable is Context {
@@ -105,18 +189,14 @@ contract SagaWorldStaker is Ownable {
 
     mapping (address => UserInfo) users;
     
-    IERC20 public depositToken; // eg. PancakeSwap SagaW LP token
-    IERC20 public rewardToken;  // eg. SagaW
-
-    // We are not using depositToken.balanceOf in order to prevent DOS attacks (attacker can make the total tokens staked very large)
-    // and to add a skim() functionality with which the owner can collect tokens which were transferred outside the stake mechanism.
+    IERC20 public depositToken; 
+    IERC20 public rewardToken;  
     uint256 public totalStaked;
-
     uint256 public rewardPeriodEndTimestamp;
     uint256 public rewardPerSecond; // multiplied by 1e7, to make up for division by 24*60*60
 
     uint256 public lastRewardTimestamp;
-    uint256 public accumulatedRewardPerShare; // multiplied by 1e12, same as MasterChef
+    uint256 public accumulatedRewardPerShare; // multiplied by 1e12, 
 
     event AddRewards(uint256 amount, uint256 lengthInDays);
     event ClaimReward(address indexed user, uint256 amount);
@@ -130,7 +210,6 @@ contract SagaWorldStaker is Ownable {
         rewardToken = IERC20(_rewardToken);
     }
 
-    // Owner should have approved ERC20 before.
     function addRewards(uint256 _rewardsAmount, uint256 _lengthInDays)
     external onlyOwner {
         require(block.timestamp > rewardPeriodEndTimestamp, "Staker: can't add rewards before period finished");
@@ -141,12 +220,10 @@ contract SagaWorldStaker is Ownable {
         emit AddRewards(_rewardsAmount, _lengthInDays);
     }
 
-    // Main function to keep a balance of the rewards.
-    // Is called before each user action (stake, unstake, claim).
-    // See top of file for high level description.
+
     function updateRewards()
     public {
-        // If no staking period active, or already updated rewards after staking ended, or nobody staked anything - nothing to do
+  
         if (block.timestamp <= lastRewardTimestamp) {
             return;
         }
@@ -155,7 +232,6 @@ contract SagaWorldStaker is Ownable {
             return;
         }
 
-        // If staking period ended, calculate time delta based on the time the staking ended (and not after)
         uint256 endingTime;
         if (block.timestamp > rewardPeriodEndTimestamp) {
             endingTime = rewardPeriodEndTimestamp;
@@ -163,10 +239,7 @@ contract SagaWorldStaker is Ownable {
             endingTime = block.timestamp;
         }
         uint256 secondsSinceLastRewardUpdate = endingTime.sub(lastRewardTimestamp);
-        uint256 totalNewReward = secondsSinceLastRewardUpdate.mul(rewardPerSecond); // For everybody in the pool
-        // The next line will calculate the reward for each staked token in the pool.
-        //  So when a specific user will claim his rewards,
-        //  we will basically multiply this var by the amount the user staked.
+        uint256 totalNewReward = secondsSinceLastRewardUpdate.mul(rewardPerSecond); 
         accumulatedRewardPerShare = accumulatedRewardPerShare.add(totalNewReward.mul(1e12).div(totalStaked));
         lastRewardTimestamp = block.timestamp;
         if (block.timestamp > rewardPeriodEndTimestamp) {
@@ -174,13 +247,12 @@ contract SagaWorldStaker is Ownable {
         }
     }
 
-    // Will deposit specified amount and also send rewards.
-    // User should have approved ERC20 before.
+
     function deposit(uint256 _amount)
     external {
         UserInfo storage user = users[msg.sender];
         updateRewards();
-        // Send reward for previous deposits
+
         if (user.deposited > 0) {
             uint256 pending = user.deposited.mul(accumulatedRewardPerShare).div(1e12).div(1e7).sub(user.rewardsAlreadyConsidered);
             require(rewardToken.transfer(msg.sender, pending), "Staker: transfer failed");
@@ -194,7 +266,6 @@ contract SagaWorldStaker is Ownable {
     }
     
 
-    // Will withdraw the specified amount and also send rewards.
     function withdraw(uint256 _amount)
     external {
         UserInfo storage user = users[msg.sender];
@@ -211,7 +282,6 @@ contract SagaWorldStaker is Ownable {
         emit Withdraw(msg.sender, _amount);
     }
 
-    // Will just send rewards.
     function claim()
     external {
         UserInfo storage user = users[msg.sender];
@@ -226,8 +296,6 @@ contract SagaWorldStaker is Ownable {
         
     }
 
-    // Will collect depositTokens (LP tokens) that were sent to the contract
-    //  Outside of the staking mechanism.
     function skim()
     external onlyOwner {
         uint256 depositTokenBalance = depositToken.balanceOf(address(this));
@@ -238,12 +306,6 @@ contract SagaWorldStaker is Ownable {
         }
     }
 
-    /* 
-        ####################################################
-        ################## View functions ##################
-        ####################################################
-
-    */
 
     // Return the user's pending rewards.
     function pendingRewards(address _user)
@@ -264,7 +326,6 @@ contract SagaWorldStaker is Ownable {
         return user.deposited.mul(accumulated).div(1e12).div(1e7).sub(user.rewardsAlreadyConsidered);
     }
 
-    // Returns misc details for the front end.
     function getFrontendView()
     external view returns (uint256 _rewardPerSecond, uint256 _secondsLeft, uint256 _deposited, uint256 _pending) {
         if (block.timestamp <= rewardPeriodEndTimestamp) {

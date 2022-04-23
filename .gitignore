@@ -4,3 +4,4 @@ rganache
 tconsole
 build/
 .secret
+.env
